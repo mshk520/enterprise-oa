@@ -2,6 +2,36 @@
 
 基于 [RuoYi-Vue](https://gitee.com/y_project/RuoYi-Vue) 脚手架二次开发的前后端分离企业 OA 系统，覆盖会议室预约、车辆调度、消息通知等日常办公场景。
 
+## 系统截图
+
+**登录页 / 首页**：模块化入口 + 实时公告 + 我的会议预约
+
+![登录页](docs/images/01-login.png)
+
+![首页](docs/images/02-dashboard.png)
+
+**会议室预约**：日历视图按天查看各会议室占用，一键预约
+
+![会议室预约](docs/images/03-booking-calendar.png)
+
+**预约管理 / 会议室台账**
+
+![预约管理](docs/images/04-booking-list.png)
+
+![会议室管理](docs/images/05-room-list.png)
+
+**用车申请**：起止地、单程/双程、用车性质与用途的完整表单
+
+![用车申请](docs/images/06-car-apply.png)
+
+**菜单权限**：动态菜单与按钮级权限配置
+
+![菜单管理](docs/images/08-menu-admin.png)
+
+**多语言**：English 界面
+
+![English UI](docs/images/09-english.png)
+
 ## 功能模块
 
 | 模块 | 功能 |
