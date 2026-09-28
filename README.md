@@ -38,13 +38,14 @@
 
 **环境**：JDK 17+、Maven 3.8+、Node 16+、MySQL 8、Redis
 
-1. 创建数据库并导入脚本：
+1. 创建数据库并导入全量初始化脚本（含表结构、菜单权限、字典与演示数据）：
 
 ```bash
 mysql -uroot -p -e "create database web_db default charset utf8mb4"
-mysql -uroot -p web_db < sql/ry_20260417.sql
-mysql -uroot -p web_db < sql/quartz.sql
+mysql -uroot -p --default-character-set=utf8mb4 web_db < sql/web_db_demo.sql
 ```
+
+> `sql/` 目录下其余 `.sql` 为开发期间的增量脚本（建表、菜单、权限修补），初始化只需导入 `web_db_demo.sql`。
 
 2. 修改数据源与 Redis 配置：`Mingxing-admin/src/main/resources/application-druid.yml`、`application.yml`
 
