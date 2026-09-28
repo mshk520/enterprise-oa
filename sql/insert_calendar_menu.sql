@@ -1,0 +1,2 @@
+﻿INSERT INTO sys_menu (menu_name, parent_id, order_num, path, component, query, is_frame, is_cache, menu_type, visible, status, perms, icon, create_by, create_time, remark)
+VALUES ('使用情况', (SELECT menu_id FROM (SELECT menu_id FROM sys_menu WHERE menu_name = '会议室' LIMIT 1) AS tmp), 2, 'calendar', 'mtg/calendar/index', NULL, 1, 0, 'C', '0', '0', 'mtg:booking:calendar', 'date', 'admin', sysdate(), '会议室预约日历视图');

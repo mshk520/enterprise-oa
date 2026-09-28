@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.car.mapper.CarDriverMapper">
+
+    <resultMap type="CarDriver" id="CarDriverResult">
+        <id     property="driverId"      column="driver_id"      />
+        <result property="driverName"    column="driver_name"    />
+        <result property="driverNameEn"  column="driver_name_en" />
+        <result property="phone"         column="phone"          />
+        <result property="status"        column="status"         />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"        column="remark"         />
+    </resultMap>
+
+    <sql id="selectCarDriverVo">
+        select driver_id, driver_name, driver_name_en, phone, status, create_by, create_time, update_by, update_time, remark
+        from car_driver
+    </sql>
+
+    <select id="selectCarDriverList" parameterType="CarDriver" resultMap="CarDriverResult">
+        <include refid="selectCarDriverVo"/>
+        <where>
+            <if test="driverName != null and driverName != ''">
+                AND driver_name like concat('%', #{driverName}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone like concat('%', #{phone}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND status = #{status}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                and date_format(create_time,'%Y%m%d') >= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                and date_format(create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by driver_id asc
+    </select>
+
+    <select id="selectCarDriverById" parameterType="Long" resultMap="CarDriverResult">
+        <include refid="selectCarDriverVo"/>
+        where driver_id = #{driverId}
+    </select>
+
+    <insert id="insertCarDriver" parameterType="CarDriver">
+        insert into car_driver (
+            <if test="driverName != null and driverName != ''">driver_name,</if>
+            <if test="driverNameEn != null and driverNameEn != ''">driver_name_en,</if>
+            <if test="phone != null and phone != ''">phone,</if>
+            <if test="status != null and status != ''">status,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            create_time
+        ) values (
+            <if test="driverName != null and driverName != ''">#{driverName},</if>
+            <if test="driverNameEn != null and driverNameEn != ''">#{driverNameEn},</if>
+            <if test="phone != null and phone != ''">#{phone},</if>
+            <if test="status != null and status != ''">#{status},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            sysdate()
+        )
+    </insert>
+
+    <update id="updateCarDriver" parameterType="CarDriver">
+        update car_driver
+        <set>
+            <if test="driverName != null and driverName != ''">driver_name = #{driverName},</if>
+            <if test="driverNameEn != null and driverNameEn != ''">driver_name_en = #{driverNameEn},</if>
+            <if test="phone != null and phone != ''">phone = #{phone},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = sysdate()
+        </set>
+        where driver_id = #{driverId}
+    </update>
+
+    <delete id="deleteCarDriverById" parameterType="Long">
+        delete from car_driver where driver_id = #{driverId}
+    </delete>
+
+    <delete id="deleteCarDriverByIds" parameterType="Long">
+        delete from car_driver where driver_id in
+        <foreach item="driverId" collection="array" open="(" separator="," close=")">
+            #{driverId}
+        </foreach>
+    </delete>
+
+</mapper>

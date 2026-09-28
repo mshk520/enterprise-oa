@@ -1,0 +1,288 @@
+@import './variables.scss';
+@import './mixin.scss';
+@import './transition.scss';
+@import './element-ui.scss';
+@import './sidebar.scss';
+@import './btn.scss';
+
+body {
+  height: 100%;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Microsoft YaHei', Arial, sans-serif;
+  background: #f5f7fa;
+  color: #1a2744;
+}
+
+.card-premium:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.04);
+  transform: translateY(-1px);
+}
+
+label {
+  font-weight: 700;
+}
+
+html {
+  height: 100%;
+  box-sizing: border-box;
+}
+
+#app {
+  height: 100%;
+}
+
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+.no-padding {
+  padding: 0px !important;
+}
+
+.padding-content {
+  padding: 4px 0;
+}
+
+a:focus,
+a:active {
+  outline: none;
+}
+
+a,
+a:focus,
+a:hover {
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
+}
+
+div:focus {
+  outline: none;
+}
+
+.fr {
+  float: right;
+}
+
+.fl {
+  float: left;
+}
+
+.pr-5 {
+  padding-right: 5px;
+}
+
+.pl-5 {
+  padding-left: 5px;
+}
+
+.block {
+  display: block;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.inlineBlock {
+  display: block;
+}
+
+.clearfix {
+  &:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+  }
+}
+
+aside {
+  background: #eef1f6;
+  padding: 8px 24px;
+  margin-bottom: 20px;
+  border-radius: 2px;
+  display: block;
+  line-height: 32px;
+  font-size: 16px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  color: #2c3e50;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  a {
+    color: #337ab7;
+    cursor: pointer;
+
+    &:hover {
+      color: rgb(32, 160, 255);
+    }
+  }
+}
+
+//main-container全局样式
+.app-container {
+  padding: 20px;
+}
+
+.components-container {
+  margin: 30px 50px;
+  position: relative;
+}
+
+.text-center {
+  text-align: center
+}
+
+.sub-navbar {
+  height: 50px;
+  line-height: 50px;
+  position: relative;
+  width: 100%;
+  text-align: right;
+  padding-right: 20px;
+  transition: 600ms ease position;
+  background: linear-gradient(90deg, rgba(32, 182, 249, 1) 0%, rgba(32, 182, 249, 1) 0%, rgba(33, 120, 241, 1) 100%, rgba(33, 120, 241, 1) 100%);
+
+  .subtitle {
+    font-size: 20px;
+    color: #fff;
+  }
+
+  &.draft {
+    background: #d0d0d0;
+  }
+
+  &.deleted {
+    background: #d0d0d0;
+  }
+}
+
+.link-type,
+.link-type:focus {
+  color: #337ab7;
+  cursor: pointer;
+
+  &:hover {
+    color: rgb(32, 160, 255);
+  }
+}
+
+.filter-container {
+  padding-bottom: 10px;
+
+  .filter-item {
+    display: inline-block;
+    vertical-align: middle;
+    margin-bottom: 10px;
+  }
+}
+
+/* ============================================
+   微交互 & 动画 - Pressfield Style
+   ============================================ */
+
+/* 页面载入淡入 */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.app-container {
+  animation: fadeIn 0.4s ease;
+}
+
+/* 卡片悬停微交互 */
+.el-card {
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.el-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 表格行悬停 */
+.el-table__row {
+  transition: background-color 0.15s ease;
+}
+
+/* 按钮微交互 */
+.el-button {
+  transition: all 0.15s ease;
+}
+
+.el-button:active {
+  transform: scale(0.98);
+}
+
+/* 输入框聚焦动画 */
+.el-input__inner {
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 导航项悬停 */
+.navbar {
+  transition: background-color 0.2s ease;
+}
+
+/* 侧边栏菜单项 */
+.sidebar-container .el-menu-item,
+.sidebar-container .el-submenu__title {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* 日期选择器悬停效果 */
+.el-date-editor .el-input__inner:hover {
+  border-color: #2c5282;
+}
+
+/* 标签页切换动画 */
+.el-tabs__item {
+  transition: color 0.15s ease;
+}
+
+/* 下拉菜单动画 */
+.el-dropdown-menu {
+  animation: fadeIn 0.15s ease;
+}
+
+/* 对话框进入动画 */
+.el-dialog {
+  animation: fadeIn 0.2s ease;
+}
+
+/* 消息提示 */
+.el-message {
+  animation: fadeIn 0.2s ease;
+}
+
+/* 加载遮罩 */
+.el-loading-mask {
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* 大号通知弹窗 */
+.notice-large {
+  width: 400px !important;
+  min-height: 120px;
+
+  .el-notification__title {
+    font-size: 18px;
+    font-weight: bold;
+  }
+
+  .el-notification__content {
+    font-size: 15px;
+    margin-top: 8px;
+  }
+
+  .el-notification__icon {
+    font-size: 28px;
+  }
+}

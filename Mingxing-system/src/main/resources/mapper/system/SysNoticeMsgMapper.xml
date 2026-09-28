@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.system.mapper.SysNoticeMsgMapper">
+
+    <resultMap type="SysNoticeMsg" id="SysNoticeMsgResult">
+        <id     property="msgId"         column="msg_id"         />
+        <result property="msgTitle"       column="msg_title"       />
+        <result property="msgContent"     column="msg_content"     />
+        <result property="msgType"        column="msg_type"        />
+        <result property="noticeType"     column="notice_type"     />
+        <result property="businessId"     column="business_id"     />
+        <result property="businessType"   column="business_type"   />
+        <result property="receiverType"   column="receiver_type"   />
+        <result property="receiver"       column="receiver"        />
+        <result property="isRead"         column="is_read"         />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+    </resultMap>
+
+    <sql id="selectNoticeMsgVo">
+        select msg_id, msg_title, msg_content, msg_type, notice_type,
+               business_id, business_type, receiver_type, receiver,
+               is_read, create_by, create_time, update_by, update_time
+        from sys_notice_msg
+    </sql>
+
+    <select id="selectNoticeMsgList" parameterType="SysNoticeMsg" resultMap="SysNoticeMsgResult">
+        <include refid="selectNoticeMsgVo"/>
+        <where>
+            <if test="msgTitle != null and msgTitle != ''">
+                AND msg_title like concat('%', #{msgTitle}, '%')
+            </if>
+            <if test="noticeType != null and noticeType != ''">
+                AND notice_type = #{noticeType}
+            </if>
+            <if test="receiver != null and receiver != ''">
+                AND (receiver = #{receiver} OR receiver LIKE concat('%', #{receiver}, '%'))
+            </if>
+            <if test="isRead != null and isRead != ''">
+                AND is_read = #{isRead}
+            </if>
+        </where>
+        order by msg_id desc
+    </select>
+
+    <select id="selectUnreadCount" parameterType="String" resultType="int">
+        select count(*) from sys_notice_msg where (receiver = #{receiver} OR receiver LIKE concat('%', #{receiver}, '%')) and is_read = '0'
+    </select>
+
+    <select id="selectNoticeMsgById" parameterType="Long" resultMap="SysNoticeMsgResult">
+        <include refid="selectNoticeMsgVo"/>
+        where msg_id = #{msgId}
+    </select>
+
+    <insert id="insertNoticeMsg" parameterType="SysNoticeMsg" useGeneratedKeys="true" keyProperty="msgId">
+        insert into sys_notice_msg (
+            msg_title, msg_content, msg_type, notice_type,
+            business_id, business_type, receiver_type, receiver,
+            is_read, create_by, create_time
+        ) values (
+            #{msgTitle}, #{msgContent}, #{msgType}, #{noticeType},
+            #{businessId}, #{businessType}, #{receiverType}, #{receiver},
+            '0', #{createBy}, sysdate()
+        )
+    </insert>
+
+    <update id="updateNoticeMsg" parameterType="SysNoticeMsg">
+        update sys_notice_msg
+        <set>
+            <if test="msgTitle != null">msg_title = #{msgTitle},</if>
+            <if test="msgContent != null">msg_content = #{msgContent},</if>
+            <if test="msgType != null">msg_type = #{msgType},</if>
+            <if test="noticeType != null">notice_type = #{noticeType},</if>
+            <if test="isRead != null">is_read = #{isRead},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </set>
+        where msg_id = #{msgId}
+    </update>
+
+    <delete id="deleteNoticeMsgById" parameterType="Long">
+        delete from sys_notice_msg where msg_id = #{msgId}
+    </delete>
+
+    <delete id="deleteNoticeMsgByIds" parameterType="Long">
+        delete from sys_notice_msg where msg_id in
+        <foreach item="msgId" collection="array" open="(" separator="," close=")">
+            #{msgId}
+        </foreach>
+    </delete>
+
+    <update id="markAllAsRead" parameterType="String">
+        update sys_notice_msg set is_read = '1', update_time = sysdate()
+        where is_read = '0' and (receiver = #{receiver} OR receiver LIKE concat('%', #{receiver}, '%'))
+    </update>
+
+    <select id="selectUnreadCountByReceivers" parameterType="List" resultType="int">
+        select count(*) from sys_notice_msg where is_read = '0' and receiver in
+        <foreach item="r" collection="list" open="(" separator="," close=")">
+            #{r}
+        </foreach>
+    </select>
+
+    <select id="selectNoticeMsgListByReceivers" parameterType="List" resultMap="SysNoticeMsgResult">
+        <include refid="selectNoticeMsgVo"/>
+        where receiver in
+        <foreach item="r" collection="list" open="(" separator="," close=")">
+            #{r}
+        </foreach>
+        order by msg_id desc
+        limit 20
+    </select>
+
+    <update id="markAllAsReadByReceivers" parameterType="List">
+        update sys_notice_msg set is_read = '1', update_time = sysdate()
+        where is_read = '0' and receiver in
+        <foreach item="r" collection="list" open="(" separator="," close=")">
+            #{r}
+        </foreach>
+    </update>
+
+</mapper>

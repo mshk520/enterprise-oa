@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.car.mapper.CarAccessRecordMapper">
+
+    <resultMap type="CarAccessRecord" id="CarAccessRecordResult">
+        <id     property="accessId"        column="access_id"        />
+        <result property="plateNumber"     column="plate_number"     />
+        <result property="driverName"      column="driver_name"      />
+        <result property="driverNameEn"    column="driver_name_en"   />
+        <result property="outTime"         column="out_time"         />
+        <result property="inTime"          column="in_time"          />
+        <result property="operatorName"    column="operator_name"    />
+        <result property="operatorNameEn"  column="operator_name_en" />
+        <result property="applyId"         column="apply_id"         />
+        <result property="vehicleId"       column="vehicle_id"       />
+        <result property="applyNo"         column="apply_no"         />
+        <result property="isUrgent"        column="is_urgent"        />
+        <result property="delFlag"         column="del_flag"         />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"        column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="remark"          column="remark"           />
+    </resultMap>
+
+    <sql id="selectAccessRecordVo">
+        select a.access_id, a.plate_number, a.driver_name, a.driver_name_en, a.out_time, a.in_time,
+               a.operator_name, a.operator_name_en, a.apply_id, a.vehicle_id,
+               ca.apply_no, ca.is_urgent,
+               a.del_flag, a.create_by, a.create_time, a.update_by, a.update_time, a.remark
+        from car_access_record a
+        left join car_apply ca on ca.apply_id = a.apply_id
+    </sql>
+
+    <select id="selectAccessRecordList" parameterType="CarAccessRecord" resultMap="CarAccessRecordResult">
+        <include refid="selectAccessRecordVo"/>
+        <where>
+            a.del_flag = '0'
+            <if test="plateNumber != null and plateNumber != ''">
+                AND a.plate_number like concat('%', #{plateNumber}, '%')
+            </if>
+            <if test="driverName != null and driverName != ''">
+                AND a.driver_name like concat('%', #{driverName}, '%')
+            </if>
+            <if test="params.beginOutTime != null and params.beginOutTime != ''">
+                AND a.out_time &gt;= #{params.beginOutTime}
+            </if>
+            <if test="params.endOutTime != null and params.endOutTime != ''">
+                AND a.out_time &lt;= #{params.endOutTime}
+            </if>
+        </where>
+        order by a.create_time desc
+    </select>
+
+    <select id="selectAccessRecordById" parameterType="Long" resultMap="CarAccessRecordResult">
+        <include refid="selectAccessRecordVo"/>
+        where a.access_id = #{accessId} and a.del_flag = '0'
+    </select>
+
+    <select id="selectAccessRecordByPlateNumber" parameterType="String" resultMap="CarAccessRecordResult">
+        <include refid="selectAccessRecordVo"/>
+        where a.plate_number = #{plateNumber} and a.del_flag = '0' order by a.create_time desc limit 1
+    </select>
+
+    <insert id="insertAccessRecord" parameterType="CarAccessRecord" useGeneratedKeys="true" keyProperty="accessId">
+        insert into car_access_record (
+            plate_number, driver_name, driver_name_en, out_time, in_time, operator_name, operator_name_en,
+            apply_id, vehicle_id, create_by, create_time, remark
+        ) values (
+            #{plateNumber}, #{driverName}, #{driverNameEn}, #{outTime}, #{inTime}, #{operatorName}, #{operatorNameEn},
+            #{applyId}, #{vehicleId}, #{createBy}, sysdate(), #{remark}
+        )
+    </insert>
+
+    <update id="updateAccessRecord" parameterType="CarAccessRecord">
+        update car_access_record
+        <set>
+            <if test="plateNumber != null">plate_number = #{plateNumber},</if>
+            <if test="driverName != null">driver_name = #{driverName},</if>
+            <if test="driverNameEn != null">driver_name_en = #{driverNameEn},</if>
+            <if test="outTime != null">out_time = #{outTime},</if>
+            <if test="inTime != null">in_time = #{inTime},</if>
+            <if test="operatorName != null">operator_name = #{operatorName},</if>
+            <if test="operatorNameEn != null">operator_name_en = #{operatorNameEn},</if>
+            <if test="applyId != null">apply_id = #{applyId},</if>
+            <if test="vehicleId != null">vehicle_id = #{vehicleId},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy},
+            update_time = sysdate()
+        </set>
+        where access_id = #{accessId}
+    </update>
+
+    <update id="deleteAccessRecordById" parameterType="Long">
+        update car_access_record set del_flag = '2' where access_id = #{accessId}
+    </update>
+
+    <update id="deleteAccessRecordByIds" parameterType="String">
+        update car_access_record set del_flag = '2' where access_id in
+        <foreach item="accessId" collection="array" open="(" separator="," close=")">
+            #{accessId}
+        </foreach>
+    </update>
+
+    <!-- 查询在外车辆（出厂未回场） -->
+    <select id="selectOutRecords" resultMap="CarAccessRecordResult">
+        <include refid="selectAccessRecordVo"/>
+        where a.del_flag = '0' and a.out_time is not null and a.in_time is null
+        order by a.out_time desc
+    </select>
+
+    <!-- 查询指定车辆未回场的记录 -->
+    <select id="selectOutRecordByVehicleId" parameterType="Long" resultMap="CarAccessRecordResult">
+        <include refid="selectAccessRecordVo"/>
+        where a.del_flag = '0' and a.vehicle_id = #{vehicleId} and a.out_time is not null and a.in_time is null
+        limit 1
+    </select>
+
+</mapper>

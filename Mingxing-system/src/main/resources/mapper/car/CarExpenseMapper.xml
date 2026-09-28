@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.car.mapper.CarExpenseMapper">
+
+    <resultMap type="CarExpense" id="CarExpenseResult">
+        <id     property="expenseId"       column="expense_id"       />
+        <result property="plateNumber"     column="plate_number"     />
+        <result property="applyId"         column="apply_id"         />
+        <result property="accessId"        column="access_id"        />
+        <result property="applyNo"         column="apply_no"         />
+        <result property="useType"         column="use_type"         />
+        <result property="fuelAmount"      column="fuel_amount"      />
+        <result property="tollFee"         column="toll_fee"         />
+        <result property="maintenanceFee"  column="maintenance_fee"  />
+        <result property="oilChange"       column="oil_change"       />
+        <result property="tireChange"      column="tire_change"      />
+        <result property="brakeChange"     column="brake_change"     />
+        <result property="insuranceTax"    column="insurance_tax"    />
+        <result property="phoneFee"        column="phone_fee"        />
+        <result property="parkingFee"      column="parking_fee"      />
+        <result property="hotelFee"        column="hotel_fee"        />
+        <result property="mealFee"         column="meal_fee"         />
+        <result property="annualInspection" column="annual_inspection" />
+        <result property="mileage"         column="mileage"          />
+        <result property="fuelVolume"      column="fuel_volume"      />
+        <result property="fuelPerKm"       column="fuel_per_km"      />
+        <result property="fuelPer100km"    column="fuel_per_100km"   />
+        <result property="otherFee"        column="other_fee"        />
+        <result property="remark"          column="remark"           />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"        column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="delFlag"         column="del_flag"         />
+    </resultMap>
+
+    <sql id="selectCarExpenseVo">
+        select e.expense_id, e.plate_number, e.apply_id, e.access_id, e.use_type,
+               ca.apply_no,
+               e.fuel_amount, e.toll_fee, e.maintenance_fee, e.oil_change,
+               e.tire_change, e.brake_change, e.insurance_tax, e.phone_fee,
+               e.parking_fee, e.hotel_fee, e.meal_fee, e.annual_inspection,
+               e.mileage, e.fuel_volume, e.fuel_per_km, e.fuel_per_100km,
+               e.other_fee, e.remark, e.create_by, e.create_time,
+               e.update_by, e.update_time, e.del_flag
+        from car_expense e
+        left join car_apply ca on ca.apply_id = e.apply_id
+    </sql>
+
+    <select id="selectCarExpenseList" parameterType="CarExpense" resultMap="CarExpenseResult">
+        <include refid="selectCarExpenseVo"/>
+        <where>
+            e.del_flag = '0'
+            <if test="plateNumber != null and plateNumber != ''">
+                AND e.plate_number like concat('%', #{plateNumber}, '%')
+            </if>
+            <if test="useType != null and useType != ''">
+                AND e.use_type = #{useType}
+            </if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                and date_format(e.create_time,'%Y%m%d') >= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                and date_format(e.create_time,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by e.create_time desc
+    </select>
+
+    <select id="selectCarExpenseById" parameterType="Long" resultMap="CarExpenseResult">
+        <include refid="selectCarExpenseVo"/>
+        where e.expense_id = #{expenseId}
+    </select>
+
+    <insert id="insertCarExpense" parameterType="CarExpense" useGeneratedKeys="true" keyProperty="expenseId">
+        insert into car_expense (
+            <if test="plateNumber != null and plateNumber != ''">plate_number,</if>
+            <if test="applyId != null">apply_id,</if>
+            <if test="accessId != null">access_id,</if>
+            <if test="useType != null and useType != ''">use_type,</if>
+            <if test="fuelAmount != null">fuel_amount,</if>
+            <if test="tollFee != null">toll_fee,</if>
+            <if test="maintenanceFee != null">maintenance_fee,</if>
+            <if test="oilChange != null">oil_change,</if>
+            <if test="tireChange != null">tire_change,</if>
+            <if test="brakeChange != null">brake_change,</if>
+            <if test="insuranceTax != null">insurance_tax,</if>
+            <if test="phoneFee != null">phone_fee,</if>
+            <if test="parkingFee != null">parking_fee,</if>
+            <if test="hotelFee != null">hotel_fee,</if>
+            <if test="mealFee != null">meal_fee,</if>
+            <if test="annualInspection != null">annual_inspection,</if>
+            <if test="mileage != null">mileage,</if>
+            <if test="fuelVolume != null">fuel_volume,</if>
+            <if test="fuelPerKm != null">fuel_per_km,</if>
+            <if test="fuelPer100km != null">fuel_per_100km,</if>
+            <if test="otherFee != null">other_fee,</if>
+            <if test="remark != null and remark != ''">remark,</if>
+            <if test="createBy != null and createBy != ''">create_by,</if>
+            create_time
+        ) values (
+            <if test="plateNumber != null and plateNumber != ''">#{plateNumber},</if>
+            <if test="applyId != null">#{applyId},</if>
+            <if test="accessId != null">#{accessId},</if>
+            <if test="useType != null and useType != ''">#{useType},</if>
+            <if test="fuelAmount != null">#{fuelAmount},</if>
+            <if test="tollFee != null">#{tollFee},</if>
+            <if test="maintenanceFee != null">#{maintenanceFee},</if>
+            <if test="oilChange != null">#{oilChange},</if>
+            <if test="tireChange != null">#{tireChange},</if>
+            <if test="brakeChange != null">#{brakeChange},</if>
+            <if test="insuranceTax != null">#{insuranceTax},</if>
+            <if test="phoneFee != null">#{phoneFee},</if>
+            <if test="parkingFee != null">#{parkingFee},</if>
+            <if test="hotelFee != null">#{hotelFee},</if>
+            <if test="mealFee != null">#{mealFee},</if>
+            <if test="annualInspection != null">#{annualInspection},</if>
+            <if test="mileage != null">#{mileage},</if>
+            <if test="fuelVolume != null">#{fuelVolume},</if>
+            <if test="fuelPerKm != null">#{fuelPerKm},</if>
+            <if test="fuelPer100km != null">#{fuelPer100km},</if>
+            <if test="otherFee != null">#{otherFee},</if>
+            <if test="remark != null and remark != ''">#{remark},</if>
+            <if test="createBy != null and createBy != ''">#{createBy},</if>
+            sysdate()
+        )
+    </insert>
+
+    <update id="updateCarExpense" parameterType="CarExpense">
+        update car_expense
+        <set>
+            <if test="plateNumber != null">plate_number = #{plateNumber},</if>
+            <if test="applyId != null">apply_id = #{applyId},</if>
+            <if test="accessId != null">access_id = #{accessId},</if>
+            <if test="useType != null">use_type = #{useType},</if>
+            <if test="fuelAmount != null">fuel_amount = #{fuelAmount},</if>
+            <if test="tollFee != null">toll_fee = #{tollFee},</if>
+            <if test="maintenanceFee != null">maintenance_fee = #{maintenanceFee},</if>
+            <if test="oilChange != null">oil_change = #{oilChange},</if>
+            <if test="tireChange != null">tire_change = #{tireChange},</if>
+            <if test="brakeChange != null">brake_change = #{brakeChange},</if>
+            <if test="insuranceTax != null">insurance_tax = #{insuranceTax},</if>
+            <if test="phoneFee != null">phone_fee = #{phoneFee},</if>
+            <if test="parkingFee != null">parking_fee = #{parkingFee},</if>
+            <if test="hotelFee != null">hotel_fee = #{hotelFee},</if>
+            <if test="mealFee != null">meal_fee = #{mealFee},</if>
+            <if test="annualInspection != null">annual_inspection = #{annualInspection},</if>
+            <if test="mileage != null">mileage = #{mileage},</if>
+            <if test="fuelVolume != null">fuel_volume = #{fuelVolume},</if>
+            <if test="fuelPerKm != null">fuel_per_km = #{fuelPerKm},</if>
+            <if test="fuelPer100km != null">fuel_per_100km = #{fuelPer100km},</if>
+            <if test="otherFee != null">other_fee = #{otherFee},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </set>
+        where expense_id = #{expenseId}
+    </update>
+
+    <delete id="deleteCarExpenseById" parameterType="Long">
+        update car_expense set del_flag = '2' where expense_id = #{expenseId}
+    </delete>
+
+    <delete id="deleteCarExpenseByIds" parameterType="Long">
+        update car_expense set del_flag = '2' where expense_id in
+        <foreach item="expenseId" collection="array" open="(" separator="," close=")">
+            #{expenseId}
+        </foreach>
+    </delete>
+
+</mapper>

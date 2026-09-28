@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.car.mapper.CarVehicleMapper">
+
+    <resultMap type="CarVehicle" id="CarVehicleResult">
+        <id     property="vehicleId"       column="vehicle_id"       />
+        <result property="plateNumber"     column="plate_number"     />
+        <result property="brand"           column="brand"            />
+        <result property="brandEn"         column="brand_en"         />
+        <result property="color"           column="color"            />
+        <result property="colorEn"         column="color_en"         />
+        <result property="seatCount"       column="seat_count"       />
+        <result property="deptId"          column="dept_id"          />
+        <result property="deptName"        column="dept_name"        />
+        <result property="deptNameEn"      column="dept_name_en"     />
+        <result property="status"          column="status"           />
+        <result property="totalMileage"    column="total_mileage"    />
+        <result property="delFlag"         column="del_flag"         />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"        column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="remark"          column="remark"           />
+    </resultMap>
+
+    <sql id="selectVehicleVo">
+        select v.vehicle_id, v.plate_number, v.brand, v.brand_en, v.color, v.color_en, v.seat_count,
+               v.dept_id, d.dept_name, d.dept_name_en, v.status, v.total_mileage, v.del_flag,
+               v.create_by, v.create_time, v.update_by, v.update_time, v.remark
+        from car_vehicle v
+        left join sys_dept d on v.dept_id = d.dept_id
+    </sql>
+
+    <select id="selectVehicleList" parameterType="CarVehicle" resultMap="CarVehicleResult">
+        <include refid="selectVehicleVo"/>
+        <where>
+            v.del_flag = '0'
+            <if test="plateNumber != null and plateNumber != ''">
+                AND v.plate_number like concat('%', #{plateNumber}, '%')
+            </if>
+            <if test="brand != null and brand != ''">
+                AND v.brand like concat('%', #{brand}, '%')
+            </if>
+            <if test="status != null and status != ''">
+                AND v.status = #{status}
+            </if>
+            <if test="deptId != null">
+                AND v.dept_id = #{deptId}
+            </if>
+        </where>
+        order by v.create_time desc
+    </select>
+
+    <select id="selectVehicleById" parameterType="Long" resultMap="CarVehicleResult">
+        <include refid="selectVehicleVo"/>
+        where v.vehicle_id = #{vehicleId} and v.del_flag = '0'
+    </select>
+
+    <select id="selectVehicleByIdForUpdate" parameterType="Long" resultMap="CarVehicleResult">
+        <include refid="selectVehicleVo"/>
+        where v.vehicle_id = #{vehicleId} and v.del_flag = '0' for update
+    </select>
+
+    <select id="selectVehicleByPlateNumber" parameterType="String" resultMap="CarVehicleResult">
+        <include refid="selectVehicleVo"/>
+        where v.plate_number = #{plateNumber} and v.del_flag = '0' limit 1
+    </select>
+
+    <insert id="insertVehicle" parameterType="CarVehicle" useGeneratedKeys="true" keyProperty="vehicleId">
+        insert into car_vehicle (
+            plate_number, brand, brand_en, color, color_en, seat_count, dept_id, status, total_mileage,
+            create_by, create_time, remark
+        ) values (
+            #{plateNumber}, #{brand}, #{brandEn}, #{color}, #{colorEn}, #{seatCount}, #{deptId}, #{status}, #{totalMileage},
+            #{createBy}, sysdate(), #{remark}
+        )
+    </insert>
+
+    <update id="updateVehicle" parameterType="CarVehicle">
+        update car_vehicle
+        <set>
+            <if test="plateNumber != null">plate_number = #{plateNumber},</if>
+            <if test="brand != null">brand = #{brand},</if>
+            <if test="brandEn != null">brand_en = #{brandEn},</if>
+            <if test="color != null">color = #{color},</if>
+            <if test="colorEn != null">color_en = #{colorEn},</if>
+            <if test="seatCount != null">seat_count = #{seatCount},</if>
+            <if test="deptId != null">dept_id = #{deptId},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="totalMileage != null">total_mileage = #{totalMileage},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_by = #{updateBy},
+            update_time = sysdate()
+        </set>
+        where vehicle_id = #{vehicleId}
+    </update>
+
+    <update id="updateVehicleStatus">
+        update car_vehicle set status = #{status} where vehicle_id = #{vehicleId}
+    </update>
+
+    <update id="deleteVehicleById" parameterType="Long">
+        update car_vehicle set del_flag = '2' where vehicle_id = #{vehicleId}
+    </update>
+
+    <update id="deleteVehicleByIds" parameterType="String">
+        update car_vehicle set del_flag = '2' where vehicle_id in
+        <foreach item="vehicleId" collection="array" open="(" separator="," close=")">
+            #{vehicleId}
+        </foreach>
+    </update>
+
+</mapper>

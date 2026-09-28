@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.mtg.mapper.RptChinaOrderMapper">
+
+    <resultMap type="RptChinaOrder" id="RptChinaOrderResult">
+        <result property="year" column="year"/>
+        <result property="month" column="month"/>
+        <result property="customerId" column="customer_id"/>
+        <result property="gauge" column="Gauge"/>
+        <result property="orderQty" column="order_qty"/>
+        <result property="producingCompany" column="producing_company"/>
+    </resultMap>
+
+    <select id="selectChinaOrderList" resultMap="RptChinaOrderResult" statementType="CALLABLE">
+        {call rpt_group_reporting_customer_sabrina(#{yMFrom, jdbcType=VARCHAR}, #{yMTo, jdbcType=VARCHAR})}
+    </select>
+
+    <select id="selectChinaOrderCount" resultType="int" statementType="STATEMENT">
+        IF OBJECT_ID('tempdb..#tmp_rpt_count') IS NOT NULL DROP TABLE #tmp_rpt_count
+        CREATE TABLE #tmp_rpt_count (
+            year varchar(10),
+            month varchar(10),
+            customer_id varchar(100),
+            Gauge varchar(100),
+            order_qty int,
+            producing_company varchar(10)
+        )
+        INSERT INTO #tmp_rpt_count EXEC rpt_group_reporting_customer_sabrina '${yMFrom}', '${yMTo}'
+        SELECT COUNT(*) FROM #tmp_rpt_count
+    </select>
+
+    <select id="selectChinaOrderPaginated" resultMap="RptChinaOrderResult" statementType="STATEMENT">
+        IF OBJECT_ID('tempdb..#tmp_rpt') IS NOT NULL DROP TABLE #tmp_rpt
+        CREATE TABLE #tmp_rpt (
+            year varchar(10),
+            month varchar(10),
+            customer_id varchar(100),
+            Gauge varchar(100),
+            order_qty int,
+            producing_company varchar(10)
+        )
+        INSERT INTO #tmp_rpt EXEC rpt_group_reporting_customer_sabrina '${yMFrom}', '${yMTo}'
+        SELECT * FROM #tmp_rpt
+        ORDER BY year, month
+        OFFSET ${offset} ROWS FETCH NEXT ${pageSize} ROWS ONLY
+    </select>
+
+    <select id="selectChinaOrderSummary" resultType="map" statementType="STATEMENT">
+        IF OBJECT_ID('tempdb..#tmp_rpt_sum') IS NOT NULL DROP TABLE #tmp_rpt_sum
+        CREATE TABLE #tmp_rpt_sum (
+            year varchar(10),
+            month varchar(10),
+            customer_id varchar(100),
+            Gauge varchar(100),
+            order_qty int,
+            producing_company varchar(10)
+        )
+        INSERT INTO #tmp_rpt_sum EXEC rpt_group_reporting_customer_sabrina '${yMFrom}', '${yMTo}'
+        SELECT year, SUM(order_qty) AS totalQty FROM #tmp_rpt_sum GROUP BY year ORDER BY year
+    </select>
+
+</mapper>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.mtg.mapper.MtgFixedBookingMapper">
+
+    <resultMap type="com.mingxing.mtg.domain.MtgFixedBooking" id="MtgFixedBookingResult">
+        <id property="fixedId" column="fixed_id"/>
+        <result property="bookingTitle" column="booking_title"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="recurrenceType" column="recurrence_type"/>
+        <result property="recurrenceDay" column="recurrence_day"/>
+        <result property="startDate" column="start_date"/>
+        <result property="endDate" column="end_date"/>
+        <result property="bookerId" column="booker_id"/>
+        <result property="bookerName" column="booker_name"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="attendees" column="attendees"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="meetingLink" column="meeting_link"/>
+        <result property="meetingPassword" column="meeting_password"/>
+        <result property="serviceItems" column="service_items"/>
+        <result property="status" column="status"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="remark" column="remark"/>
+    </resultMap>
+
+    <sql id="selectFixedBookingVo">
+        select f.fixed_id, f.booking_title, f.start_time, f.end_time,
+               f.recurrence_type, f.recurrence_day, f.start_date, f.end_date,
+               f.booker_id, u.nick_name as booker_name,
+               f.dept_id, d.dept_name,
+               f.attendees, f.contact_phone, f.meeting_link, f.meeting_password,
+               f.service_items, f.status, f.create_by, f.create_time,
+               f.update_by, f.update_time, f.remark
+        from mtg_fixed_booking f
+        left join sys_user u on f.booker_id = u.user_id
+        left join sys_dept d on f.dept_id = d.dept_id
+    </sql>
+
+    <select id="selectFixedBookingById" parameterType="Long" resultMap="MtgFixedBookingResult">
+        <include refid="selectFixedBookingVo"/>
+        where f.fixed_id = #{fixedId}
+    </select>
+
+    <select id="selectFixedBookingList" parameterType="com.mingxing.mtg.domain.MtgFixedBooking" resultMap="MtgFixedBookingResult">
+        <include refid="selectFixedBookingVo"/>
+        <where>
+            <if test="bookingTitle != null and bookingTitle != ''"> and f.booking_title like concat('%', #{bookingTitle}, '%')</if>
+            <if test="recurrenceType != null and recurrenceType != ''"> and f.recurrence_type = #{recurrenceType}</if>
+            <if test="status != null and status != ''"> and f.status = #{status}</if>
+        </where>
+        order by f.create_time desc
+    </select>
+
+    <insert id="insertFixedBooking" parameterType="com.mingxing.mtg.domain.MtgFixedBooking" useGeneratedKeys="true" keyProperty="fixedId">
+        insert into mtg_fixed_booking (
+            booking_title, start_time, end_time, recurrence_type, recurrence_day,
+            start_date, end_date, booker_id, dept_id, attendees, contact_phone,
+            meeting_link, meeting_password, service_items, status,
+            create_by, create_time, remark
+        ) values (
+            #{bookingTitle}, #{startTime}, #{endTime}, #{recurrenceType}, #{recurrenceDay},
+            #{startDate}, #{endDate}, #{bookerId}, #{deptId}, #{attendees}, #{contactPhone},
+            #{meetingLink}, #{meetingPassword}, #{serviceItems}, #{status},
+            #{createBy}, sysdate(), #{remark}
+        )
+    </insert>
+
+    <update id="updateFixedBooking" parameterType="com.mingxing.mtg.domain.MtgFixedBooking">
+        update mtg_fixed_booking
+        <set>
+            <if test="bookingTitle != null">booking_title = #{bookingTitle},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="recurrenceType != null">recurrence_type = #{recurrenceType},</if>
+            <if test="recurrenceDay != null">recurrence_day = #{recurrenceDay},</if>
+            <if test="startDate != null">start_date = #{startDate},</if>
+            <if test="endDate != null">end_date = #{endDate},</if>
+            <if test="attendees != null">attendees = #{attendees},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="meetingLink != null">meeting_link = #{meetingLink},</if>
+            <if test="meetingPassword != null">meeting_password = #{meetingPassword},</if>
+            <if test="serviceItems != null">service_items = #{serviceItems},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </set>
+        where fixed_id = #{fixedId}
+    </update>
+
+    <update id="deleteFixedBookingByIds" parameterType="String">
+        update mtg_fixed_booking set status = '1' where fixed_id in
+        <foreach item="fixedId" collection="array" open="(" separator="," close=")">
+            #{fixedId}
+        </foreach>
+    </update>
+
+    <delete id="deleteRoomByFixedId" parameterType="Long">
+        delete from mtg_fixed_room where fixed_id = #{fixedId}
+    </delete>
+
+    <insert id="insertRoomBatch">
+        insert into mtg_fixed_room (fixed_id, room_id) values
+        <foreach item="roomId" collection="roomIds" separator=",">
+            (#{fixedId}, #{roomId})
+        </foreach>
+    </insert>
+
+    <select id="selectRoomIdsByFixedId" parameterType="Long" resultType="Long">
+        select room_id from mtg_fixed_room where fixed_id = #{fixedId}
+    </select>
+
+    <delete id="deleteGeneratedBookingsByFixedId" parameterType="Long">
+        delete from mtg_booking where fixed_id = #{fixedId}
+    </delete>
+
+</mapper>

@@ -1,0 +1,52 @@
+# 测试环境配置
+server:
+  port: 0  # 随机端口
+
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+  sql:
+    init:
+      mode: never
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+mybatis:
+  configuration:
+    map-underscore-to-camel-case: true
+
+# 关闭定时任务、异步、WebSocket 等副作用
+mingxing:
+  quartz:
+    enabled: false
+
+# 测试专用线程池（同步执行 @Async）
+spring:
+  task:
+    execution:
+      pool:
+        core-size: 1
+        max-size: 1
+        queue-capacity: 10
+      thread-name-prefix: test-async-
+
+# 邮件测试配置（不实际发送）
+mail:
+  smtp:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+    from: test@test.com
+    mode: plain
+  notify:
+    car-apply-enabled: true
+    car-apply-admin-enabled: true
+    car-apply-admins: test@test.com

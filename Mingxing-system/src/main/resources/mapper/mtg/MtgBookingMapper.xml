@@ -1,0 +1,160 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.mingxing.mtg.mapper.MtgBookingMapper">
+
+    <resultMap type="com.mingxing.mtg.domain.MtgBooking" id="MtgBookingResult">
+        <id property="bookingId" column="booking_id"/>
+        <result property="roomId" column="room_id"/>
+        <result property="roomName" column="room_name"/>
+        <result property="roomNameEn" column="room_name_en"/>
+        <result property="subject" column="subject"/>
+        <result property="bookingDate" column="booking_date"/>
+        <result property="bookingType" column="booking_type"/>
+        <result property="startTime" column="start_time"/>
+        <result property="endTime" column="end_time"/>
+        <result property="bookerId" column="booker_id"/>
+        <result property="bookerName" column="booker_name"/>
+        <result property="deptId" column="dept_id"/>
+        <result property="deptName" column="dept_name"/>
+        <result property="deptNameEn" column="dept_name_en"/>
+        <result property="attendees" column="attendees"/>
+        <result property="contactPhone" column="contact_phone"/>
+        <result property="meetingLink" column="meeting_link"/>
+        <result property="meetingPassword" column="meeting_password"/>
+        <result property="serviceItems" column="service_items"/>
+        <result property="fixedId" column="fixed_id"/>
+        <result property="bookingStatus" column="booking_status"/>
+        <result property="isPeriodic" column="is_periodic"/>
+        <result property="periodicType" column="periodic_type"/>
+        <result property="periodicEndDate" column="periodic_end_date"/>
+        <result property="parentBookingId" column="parent_booking_id"/>
+        <result property="periodicRule" column="periodic_rule"/>
+        <result property="cancelReason" column="cancel_reason"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+        <result property="hiddenBy" column="hidden_by"/>
+    </resultMap>
+
+    <sql id="selectBookingVo">
+        select b.booking_id, b.room_id, r.room_name, r.room_name_en, b.subject,
+               b.booking_date, b.booking_type,
+               b.start_time, b.end_time,
+               b.booker_id, u.nick_name as booker_name,
+               b.dept_id, d.dept_name, d.dept_name_en,
+               b.attendees, b.contact_phone,
+               b.meeting_link, b.meeting_password,
+               b.service_items,
+               b.booking_status,
+               b.is_periodic, b.periodic_type, b.periodic_end_date,
+               b.parent_booking_id, b.periodic_rule,
+               b.cancel_reason, b.remark, b.fixed_id,
+               b.create_by, b.create_time, b.update_by, b.update_time,
+               b.hidden_by
+        from mtg_booking b
+        left join sys_user u on b.booker_id = u.user_id
+        left join sys_dept d on b.dept_id = d.dept_id
+        left join mtg_room r on b.room_id = r.room_id
+    </sql>
+
+    <select id="selectBookingById" parameterType="Long" resultMap="MtgBookingResult">
+        <include refid="selectBookingVo"/>
+        where b.booking_id = #{bookingId} and b.del_flag = '0'
+    </select>
+
+    <select id="selectBookingList" parameterType="com.mingxing.mtg.domain.MtgBooking" resultMap="MtgBookingResult">
+        <include refid="selectBookingVo"/>
+        <where>
+            b.del_flag = '0'
+            <if test="roomId != null"> and b.room_id = #{roomId}</if>
+            <if test="bookerId != null"> and b.booker_id = #{bookerId}</if>
+            <if test="bookerName != null and bookerName != ''"> and u.nick_name like concat('%', #{bookerName}, '%')</if>
+            <if test="subject != null and subject != ''"> and b.subject like concat('%', #{subject}, '%')</if>
+            <if test="bookingStatus != null and bookingStatus != ''"> and b.booking_status = #{bookingStatus}</if>
+            <if test="hiddenBy != null"> and (b.hidden_by is null or b.hidden_by != #{hiddenBy})</if>
+            <if test="params.beginTime != null and params.beginTime != ''">
+                and date_format(b.booking_date,'%Y%m%d') &gt;= date_format(#{params.beginTime},'%Y%m%d')
+            </if>
+            <if test="params.endTime != null and params.endTime != ''">
+                and date_format(b.booking_date,'%Y%m%d') &lt;= date_format(#{params.endTime},'%Y%m%d')
+            </if>
+        </where>
+        order by b.start_time
+    </select>
+
+    <update id="updateBookingHidden">
+        update mtg_booking
+        set hidden_by = #{hiddenBy}
+        where booking_id = #{bookingId}
+    </update>
+
+    <select id="selectBookingByDateRange" resultMap="MtgBookingResult">
+        <include refid="selectBookingVo"/>
+        where b.del_flag = '0'
+              and b.booking_date between #{startDate} and #{endDate}
+        order by b.start_time
+    </select>
+
+    <select id="checkTimeConflict" parameterType="com.mingxing.mtg.domain.MtgBooking" resultType="int">
+        select count(*) from mtg_booking
+        where del_flag = '0' and room_id = #{roomId}
+              and booking_status in ('0', '1')
+              and start_time &lt; #{endTime} and end_time &gt; #{startTime}
+        <if test="bookingId != null"> and booking_id != #{bookingId}</if>
+    </select>
+
+    <insert id="insertBooking" parameterType="com.mingxing.mtg.domain.MtgBooking" useGeneratedKeys="true" keyProperty="bookingId">
+        insert into mtg_booking (
+            room_id, subject, booking_date, booking_type,
+            start_time, end_time, booker_id, dept_id,
+            attendees, contact_phone, meeting_link, meeting_password,
+            service_items,
+            booking_status, is_periodic, periodic_type, periodic_end_date,
+            parent_booking_id, periodic_rule, cancel_reason,
+            fixed_id, remark, del_flag, create_by, create_time
+        ) values (
+            #{roomId}, #{subject}, #{bookingDate}, #{bookingType},
+            #{startTime}, #{endTime}, #{bookerId}, #{deptId},
+            #{attendees}, #{contactPhone}, #{meetingLink}, #{meetingPassword},
+            #{serviceItems},
+            #{bookingStatus}, #{isPeriodic}, #{periodicType}, #{periodicEndDate},
+            #{parentBookingId}, #{periodicRule}, #{cancelReason},
+            #{fixedId}, #{remark}, '0', #{createBy}, sysdate()
+        )
+    </insert>
+
+    <update id="updateBooking" parameterType="com.mingxing.mtg.domain.MtgBooking">
+        update mtg_booking
+        <set>
+            <if test="subject != null">subject = #{subject},</if>
+            <if test="bookingDate != null">booking_date = #{bookingDate},</if>
+            <if test="bookingType != null">booking_type = #{bookingType},</if>
+            <if test="startTime != null">start_time = #{startTime},</if>
+            <if test="endTime != null">end_time = #{endTime},</if>
+            <if test="attendees != null">attendees = #{attendees},</if>
+            <if test="contactPhone != null">contact_phone = #{contactPhone},</if>
+            <if test="meetingLink != null">meeting_link = #{meetingLink},</if>
+            <if test="meetingPassword != null">meeting_password = #{meetingPassword},</if>
+            <if test="serviceItems != null">service_items = #{serviceItems},</if>
+            <if test="bookingStatus != null">booking_status = #{bookingStatus},</if>
+            <if test="isPeriodic != null">is_periodic = #{isPeriodic},</if>
+            <if test="periodicType != null">periodic_type = #{periodicType},</if>
+            <if test="periodicEndDate != null">periodic_end_date = #{periodicEndDate},</if>
+            <if test="cancelReason != null">cancel_reason = #{cancelReason},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            update_time = sysdate()
+        </set>
+        where booking_id = #{bookingId}
+    </update>
+
+    <update id="deleteBookingByIds" parameterType="String">
+        update mtg_booking set del_flag = '2' where booking_id in
+        <foreach item="bookingId" collection="array" open="(" separator="," close=")">
+            #{bookingId}
+        </foreach>
+    </update>
+
+</mapper>
